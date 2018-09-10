@@ -16,6 +16,10 @@ public class Talk
             switch (args[0])
             {
                 case "-h":
+                    if (args.length > 3)
+                    {
+                        break;
+                    }
                     mode = 1;
                     if (args.length > 1)
                     {
@@ -27,6 +31,10 @@ public class Talk
                     }
                     break;
                 case "-s":
+                    if (args.length > 2)
+                    {
+                        break;
+                    }
                     mode = 2;
                     if (args.length > 1)
                     {
@@ -34,6 +42,10 @@ public class Talk
                     }
                     break;
                 case "-a":
+                    if (args.length > 3)
+                    {
+                        break;
+                    }
                     mode = 3;
                     if (args.length > 1)
                     {
@@ -51,7 +63,7 @@ public class Talk
         }
         if (mode == 0)
         {
-            System.out.println("No command line arguments given. Type java Talk -help for more information");
+            System.out.println("Invalid command line arguments given. Type java Talk -help for more information");
         }
         else if (mode == 1)
         {
@@ -71,6 +83,7 @@ public class Talk
         {
             if (!initHost(ip, portNumber))
             {
+                System.out.println("Could not connect to server switching to server mode.");
                 if (!initServer(portNumber))
                 {
                     System.out.println("Server unable to listen on specified port.");
@@ -94,7 +107,9 @@ public class Talk
         {
             String hostSendMessage;
             String hostReceiveMessage;
+            System.out.println("Attempting to connect to " + ip + " on port " + portNumber);
             Socket host = new Socket(ip, portNumber);
+            System.out.println("Successfully connected!");
             BufferedReader hostIn = new BufferedReader(new InputStreamReader(System.in));
             PrintWriter hostOut = new PrintWriter(host.getOutputStream(), true);
             BufferedReader hostReceiver = new BufferedReader(new InputStreamReader(host.getInputStream()));
@@ -109,7 +124,9 @@ public class Talk
                     }
                     else
                     {
-                        System.out.println(Inet4Address.getLocalHost().getAddress());
+                        InetAddress inet = InetAddress.getLocalHost();
+                        String statusMsg = String.format("Local IP address: %s\nHost name: %s", inet.getHostAddress(), inet.getHostName());
+                        System.out.println(statusMsg);
                     }
                 }
                 if (hostReceiver.ready())
@@ -133,7 +150,9 @@ public class Talk
         try
         {
             ServerSocket server = new ServerSocket(portNumber);
+            System.out.println("Listening on port: " + portNumber);
             Socket connectedServer = server.accept();
+            System.out.println("Connected");
             BufferedReader serverReceiver = new BufferedReader(new InputStreamReader(connectedServer.getInputStream()));
             BufferedReader serverIn = new BufferedReader(new InputStreamReader(System.in));
             PrintWriter serverOut = new PrintWriter(connectedServer.getOutputStream(), true);
@@ -150,7 +169,16 @@ public class Talk
                 if (serverIn.ready())
                 {
                     serverSendMessage = serverIn.readLine();
-                    serverOut.println(serverSendMessage);
+                    if (!serverSendMessage.equals("STATUS"))
+                    {
+                        serverOut.println(serverSendMessage);
+                    }
+                    else
+                    {
+                        InetAddress inet = InetAddress.getLocalHost();
+                        String statusMsg = String.format("Local IP address: %s\nHost name: %s", inet.getHostAddress(), inet.getHostName());
+                        System.out.println(statusMsg);
+                    }
                 }
 
             }
